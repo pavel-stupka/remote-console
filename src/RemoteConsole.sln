@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteConsole", "RemoteConsole\RemoteConsole.csproj", "{733E1099-12E7-46E1-BDE2-41FC0CCD5F29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{733E1099-12E7-46E1-BDE2-41FC0CCD5F29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{733E1099-12E7-46E1-BDE2-41FC0CCD5F29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{733E1099-12E7-46E1-BDE2-41FC0CCD5F29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{733E1099-12E7-46E1-BDE2-41FC0CCD5F29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
