@@ -22,12 +22,13 @@ public static class RemoteConsole
                 var logRecord = ParseLogRecord(bodyString);
                 PrintLogRecord(logRecord);
                 context.Response.StatusCode = 204;
-            } catch (Exception e)
+            } catch (Exception)
             {
-                await context.Response.WriteAsync(e.ToString());
                 context.Response.StatusCode = 400;
             }
         });
+        
+        Console.WriteLine("running on port 5000");
         
         app.Run("http://+:5000");
     }
