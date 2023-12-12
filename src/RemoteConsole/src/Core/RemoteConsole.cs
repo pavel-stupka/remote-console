@@ -1,16 +1,89 @@
+using System.Globalization;
+using System.Text;
+using Newtonsoft.Json;
+
 namespace RemoteConsole.Core;
 
-/// <summary>
-/// Main application class.
-/// </summary>
-public class RemoteConsole
+public static class RemoteConsole
 {
-    /// <summary>
-    /// Application entry point.
-    /// </summary>
-    /// <param name="args"></param>
-    public void Execute(string[] args)
+    public static void Execute(string[] args)
     {
-        // TODO
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.ClearProviders();
+        
+        var app = builder.Build();
+
+        app.MapPost("/", async (context) =>
+        {
+            try
+            {
+                var result = await context.Request.BodyReader.ReadAsync();
+                var bodyString = Encoding.UTF8.GetString(result.Buffer);
+                var logRecord = ParseLogRecord(bodyString);
+                PrintLogRecord(logRecord);
+                context.Response.StatusCode = 204;
+            } catch (Exception e)
+            {
+                await context.Response.WriteAsync(e.ToString());
+                context.Response.StatusCode = 400;
+            }
+        });
+        
+        app.Run("http://+:5000");
+    }
+    
+    private static void PrintLogRecord(LogRecord logRecord)
+    {
+        var timestamp = logRecord.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+        
+        Console.ForegroundColor = logRecord.LogLevel switch
+        {
+            LogLevel.Trace => ConsoleColor.Gray,
+            LogLevel.Debug => ConsoleColor.DarkCyan,
+            LogLevel.Info => ConsoleColor.DarkYellow,
+            LogLevel.Warning => ConsoleColor.Yellow,
+            LogLevel.Error => ConsoleColor.Red,
+            LogLevel.Fatal => ConsoleColor.White,
+            _ => ConsoleColor.White
+        };
+
+        if (logRecord.LogLevel == LogLevel.Fatal)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+        }
+        
+        Console.WriteLine($"{timestamp} [{logRecord.LogLevel.ToString().ToUpper()[0]}] <{logRecord.Tag}>: {logRecord.Message}");
+        
+        Console.ResetColor();
+    }
+
+    private static LogRecord ParseLogRecord(string jsonLogRecord)
+    {
+        dynamic json = JsonConvert.DeserializeObject(jsonLogRecord)!;
+        
+        DateTime timestamp = DateTime.Parse(
+            json.timestamp.ToString(),
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None
+            );
+        LogLevel logLevel = ParseLogLevel(json.logLevel.ToString());
+        string tag = json.tag.ToString();
+        string message = json.message.ToString();
+        
+        return new LogRecord(timestamp, logLevel, tag, message);
+    }
+
+    private static LogLevel ParseLogLevel(string logLevel)
+    {
+        return logLevel switch
+        {
+            "trace" => LogLevel.Trace,
+            "debug" => LogLevel.Debug,
+            "info" => LogLevel.Info,
+            "warning" => LogLevel.Warning,
+            "error" => LogLevel.Error,
+            "fatal" => LogLevel.Fatal,
+            _ => LogLevel.Info
+        };
     }
 }
