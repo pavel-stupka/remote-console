@@ -28,7 +28,7 @@ public static class RemoteConsole
             }
         });
         
-        Console.WriteLine("running on port 5000");
+        Console.WriteLine("listening on port 5000");
         
         app.Run("http://+:5000");
     }
@@ -61,12 +61,8 @@ public static class RemoteConsole
     private static LogRecord ParseLogRecord(string jsonLogRecord)
     {
         dynamic json = JsonConvert.DeserializeObject(jsonLogRecord)!;
-        
-        DateTime timestamp = DateTime.Parse(
-            json.timestamp.ToString(),
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None
-            );
+
+        DateTime timestamp = json.timestamp.Value;
         LogLevel logLevel = ParseLogLevel(json.logLevel.ToString());
         string tag = json.tag.ToString();
         string message = json.message.ToString();
