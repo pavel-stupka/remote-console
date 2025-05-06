@@ -22,8 +22,9 @@ public static class RemoteConsole
                 var logRecord = ParseLogRecord(bodyString);
                 PrintLogRecord(logRecord);
                 context.Response.StatusCode = 204;
-            } catch (Exception)
+            } catch (Exception ex)
             {
+                Console.WriteLine("Error parsing log record: " + ex.Message);
                 context.Response.StatusCode = 400;
             }
         });
@@ -61,8 +62,7 @@ public static class RemoteConsole
     private static LogRecord ParseLogRecord(string jsonLogRecord)
     {
         dynamic json = JsonConvert.DeserializeObject(jsonLogRecord)!;
-
-        DateTime timestamp = json.timestamp.Value;
+        DateTime timestamp = DateTime.Parse(json.timestamp.ToString(), null, DateTimeStyles.RoundtripKind);
         LogLevel logLevel = ParseLogLevel(json.logLevel.ToString());
         string tag = json.tag.ToString();
         string message = json.message.ToString();
