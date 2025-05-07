@@ -12,6 +12,8 @@ public static class RemoteConsole
         builder.Logging.ClearProviders();
         
         var app = builder.Build();
+        
+        var port = GetPort(args);
 
         app.MapPost("/", async (context) =>
         {
@@ -22,15 +24,31 @@ public static class RemoteConsole
                 var logRecord = ParseLogRecord(bodyString);
                 PrintLogRecord(logRecord);
                 context.Response.StatusCode = 204;
-            } catch (Exception)
+            } catch (Exception ex)
             {
+                Console.WriteLine("Error parsing log record: " + ex.Message);
                 context.Response.StatusCode = 400;
             }
         });
         
-        Console.WriteLine("listening on port 5000");
+        Console.WriteLine($"listening on port {port}");
         
-        app.Run("http://+:5000");
+        app.Run($"http://+:{port}");
+    }
+
+    private static int GetPort(string[] args)
+    {   
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "--port" || args[i] == "-p")
+            {
+                if (i + 1 < args.Length && int.TryParse(args[i + 1], out int port))
+                {
+                    return port;
+                }
+            }
+        }
+        return 5000;
     }
     
     private static void PrintLogRecord(LogRecord logRecord)
@@ -63,7 +81,7 @@ public static class RemoteConsole
         dynamic json = JsonConvert.DeserializeObject(jsonLogRecord)!;
         
         DateTime timestamp = json.timestamp != null ? DateTime.Parse(json.timestamp.ToString(), null, DateTimeStyles.RoundtripKind) : DateTime.Now;
-        LogLevel logLevel = json.logLevel != null ? ParseLogLevel(json.logLevel.ToString()) : "debug";
+        LogLevel logLevel = json.logLevel != null ? ParseLogLevel(json.logLevel.ToString()) : LogLevel.Debug;
         string tag = json.tag != null ? json.tag.ToString() : "unknown";
         string message = json.message != null ? json.message.ToString() : "no message";
         
